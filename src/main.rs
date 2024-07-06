@@ -25,6 +25,8 @@ enum TokenType {
     Greater,
     GreaterEqual,
     Slash,
+    DoubleQuote,
+    String
 }
 
 impl Display for TokenType {
@@ -48,13 +50,35 @@ impl Display for TokenType {
             TokenType::LessEqual => write!(f, "LESS_EQUAL"),
             TokenType::Greater => write!(f, "GREATER"),
             TokenType::GreaterEqual => write!(f, "GREATER_EQUAL"),
-            TokenType::Slash => write!(f, "SLASH")
+            TokenType::Slash => write!(f, "SLASH"),
+            TokenType::DoubleQuote => write!(f, "\""),
+            TokenType::String => write!(f, "STRING"),
         }
     }
 }
 
 fn match_token(char: &char, chars: &mut Chars, line_number: &usize, is_error: &mut bool) -> Result<(), ()> {
     match char {
+        '"' => {
+            let mut literal = "".to_string();
+            let mut is_complete = false;
+            while let Some(next_char) = chars.next() {
+                if next_char == '"' {
+                    is_complete = true;
+                    break
+                }
+
+                literal.push(next_char)
+            }
+            if is_complete {
+                println!("{} {double_quote}{literal}{double_quote} {literal}", TokenType::String, double_quote = TokenType::DoubleQuote);
+            } else {
+                *is_error = true;
+                writeln!(io::stderr(), "[line {}] Error: Unterminated string.", line_number + 1).unwrap();
+            }
+
+          Ok(())
+        },
         ' ' => Ok(()),
         '\t' => Ok(()),
         '(' => {
