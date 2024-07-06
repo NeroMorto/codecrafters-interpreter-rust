@@ -55,6 +55,8 @@ impl Display for TokenType {
 
 fn match_token(char: &char, chars: &mut Chars, line_number: &usize, is_error: &mut bool) -> Result<(), ()> {
     match char {
+        ' ' => Ok(()),
+        '\t' => Ok(()),
         '(' => {
             println!("{} {char} null", TokenType::LeftParen);
             Ok(())
@@ -136,7 +138,7 @@ fn match_token(char: &char, chars: &mut Chars, line_number: &usize, is_error: &m
                     }
                     _ => {
                         println!("{} {char} null", TokenType::Greater);
-                        match_token(&next_char, chars, line_number, is_error);
+                        let _ = match_token(&next_char, chars, line_number, is_error);
                         Ok(())
                     }
                 }
@@ -173,7 +175,7 @@ fn match_token(char: &char, chars: &mut Chars, line_number: &usize, is_error: &m
                     }
                     _ => {
                         println!("{} {char} null", TokenType::Equal);
-                        match_token(&next_char, chars, line_number, is_error);
+                        let _ = match_token(&next_char, chars, line_number, is_error);
                         Ok(())
                     }
                 }
