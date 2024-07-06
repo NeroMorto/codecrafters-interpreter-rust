@@ -30,6 +30,22 @@ enum TokenType {
     String,
     Number,
     Identifier,
+    And,
+    Class,
+    Else,
+    False,
+    For,
+    Fun,
+    If,
+    Nil,
+    Or,
+    Print,
+    Return,
+    Super,
+    This,
+    True,
+    Var,
+    While,
 }
 
 impl Display for TokenType {
@@ -58,23 +74,66 @@ impl Display for TokenType {
             TokenType::String => write!(f, "STRING"),
             TokenType::Number => write!(f, "NUMBER"),
             TokenType::Identifier => write!(f, "IDENTIFIER"),
+            TokenType::And => write!(f, "AND"),
+            TokenType::Class => write!(f, "CLASS"),
+            TokenType::Else => write!(f, "ELSE"),
+            TokenType::False => write!(f, "FALSE"),
+            TokenType::For => write!(f, "FOR"),
+            TokenType::Fun => write!(f, "FUN"),
+            TokenType::If => write!(f, "IF"),
+            TokenType::Nil => write!(f, "NIL"),
+            TokenType::Or => write!(f, "OR"),
+            TokenType::Print => write!(f, "PRINT"),
+            TokenType::Return => write!(f, "RETURN"),
+            TokenType::Super => write!(f, "SUPER"),
+            TokenType::This => write!(f, "THIS"),
+            TokenType::True => write!(f, "TRUE"),
+            TokenType::Var => write!(f, "VAR"),
+            TokenType::While => write!(f, "WHILE"),
         }
+    }
+}
+
+fn match_reserved(identifier: &str) -> TokenType {
+    match identifier {
+        "and" => TokenType::And,
+        "class" => TokenType::Class,
+        "else" => TokenType::Else,
+        "false" => TokenType::False,
+        "for" => TokenType::For,
+        "fun" => TokenType::Fun,
+        "if" => TokenType::If,
+        "nil" => TokenType::Nil,
+        "or" => TokenType::Or,
+        "print" => TokenType::Print,
+        "return" => TokenType::Return,
+        "super" => TokenType::Super,
+        "this" => TokenType::This,
+        "true" => TokenType::True,
+        "var" => TokenType::Var,
+        "while" => TokenType::While,
+        _ => TokenType::Identifier
     }
 }
 
 fn match_token(char: &char, chars: &mut Peekable<Chars>, line_number: &usize, is_error: &mut bool) -> Result<(), ()> {
     match char {
-        'a'..='z' | '_' => {
+        'a'..='z' | 'A'..='Z' | '_' => {
             let mut identifier = format!("{char}");
-            while let Some(next_char) = chars.peek()  {
-                if !('a'..='z' ).contains(next_char) && !('0'..='9').contains(next_char) && '_' != *next_char {
-                    break
+            while let Some(next_char) = chars.peek() {
+                if !('a'..='z').contains(next_char) && !('A'..='Z').contains(next_char) && !('0'..='9').contains(next_char) && '_' != *next_char {
+                    break;
                 }
                 identifier.push(chars.next().unwrap());
             }
-            println!("{} {identifier} null", TokenType::Identifier);
+
+            let token =  match_reserved(&identifier);
+            println!("{} {identifier} null", token);
+
+
+
             Ok(())
-        },
+        }
         '0'..='9' => {
             let mut number = "".to_string();
             let mut dot_counter: u8 = 0;
@@ -123,7 +182,7 @@ fn match_token(char: &char, chars: &mut Peekable<Chars>, line_number: &usize, is
             println!("{} {number} {number_literal}", TokenType::Number);
 
             if trailing_dot {
-                return match_token(&'.', chars, line_number, is_error)
+                return match_token(&'.', chars, line_number, is_error);
             }
 
             Ok(())
