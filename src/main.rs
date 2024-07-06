@@ -189,7 +189,7 @@ fn match_token(char: &char, chars: &mut Chars, line_number: &usize, is_error: &m
             if !*is_error {
                 *is_error = true
             }
-            writeln!(io::stderr(), "[line {}] Error: Unexpected character: {}", 1, char).unwrap();
+            writeln!(io::stderr(), "[line {}] Error: Unexpected character: {}", line_number + 1, char).unwrap();
             Ok(())
         }
     }
