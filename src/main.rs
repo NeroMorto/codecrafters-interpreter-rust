@@ -19,7 +19,11 @@ enum TokenType {
     Equal,
     EqualEqual,
     Bang,
-    BangEqual
+    BangEqual,
+    Less,
+    LessEqual,
+    Greater,
+    GreaterEqual
 }
 
 impl Display for TokenType {
@@ -39,6 +43,10 @@ impl Display for TokenType {
             TokenType::EqualEqual => write!(f, "EQUAL_EQUAL"),
             TokenType::Bang => write!(f, "BANG"),
             TokenType::BangEqual => write!(f, "BANG_EQUAL"),
+            TokenType::Less => write!(f, "LESS"),
+            TokenType::LessEqual => write!(f, "LESS_EQUAL"),
+            TokenType::Greater => write!(f, "GREATER"),
+            TokenType::GreaterEqual => write!(f, "GREATER_EQUAL"),
         }
 
     }
@@ -56,6 +64,34 @@ fn match_token(char: &char, chars: &mut Chars, line_number: &usize,  is_error: &
         '.' => println!("{} {char} null", TokenType::Dot),
         ',' => println!("{} {char} null", TokenType::Comma),
         ';' => println!("{} {char} null", TokenType::Semicolon),
+        '<' => {
+            if let Some(next_char) = chars.next() {
+                match next_char {
+                    '=' => println!("{} {char}{next_char} null", TokenType::LessEqual),
+                    _ => {
+                        println!("{} {char} null", TokenType::Less);
+                        match_token(&next_char, chars, line_number, is_error);
+                    }
+                }
+            }else {
+                println!("{} {char} null", TokenType::Less)
+            }
+        },
+        '>' => {
+            if let Some(next_char) = chars.next() {
+                match next_char {
+                    '=' => println!("{} {char}{next_char} null", TokenType::GreaterEqual),
+                    _ => {
+                        println!("{} {char} null", TokenType::Greater);
+                        match_token(&next_char, chars, line_number, is_error);
+                    }
+                }
+            }else {
+                println!("{} {char} null", TokenType::Greater)
+            }
+
+        },
+
         '!' => {
             if let Some(next_char) = chars.next() {
                 match next_char {
