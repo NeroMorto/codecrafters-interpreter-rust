@@ -1,6 +1,39 @@
 use std::env;
+use std::fmt::{Display, Formatter, write};
 use std::fs;
 use std::io::{self, Write};
+
+enum TokenType {
+    LeftParen,
+    RightParen,
+    LeftBrace,
+    RightBrace,
+    Comma,
+    Dot,
+    Minus,
+    Plus,
+    Semicolon,
+    Star,
+}
+
+impl Display for TokenType {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            TokenType::LeftParen => write!(f, "LEFT_PAREN"),
+            TokenType::RightParen => write!(f, "RIGHT_PAREN"),
+            TokenType::LeftBrace => write!(f, "LEFT_BRACE"),
+            TokenType::RightBrace => write!(f, "RIGHT_BRACE"),
+            TokenType::Comma => write!(f, "COMMA"),
+            TokenType::Dot => write!(f, "DOT"),
+            TokenType::Minus => write!(f, "MINUS"),
+            TokenType::Plus => write!(f, "PLUS"),
+            TokenType::Semicolon => write!(f, "SEMICOLON"),
+            TokenType::Star => write!(f, "STAR"),
+        }
+
+    }
+}
+
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -26,8 +59,16 @@ fn main() {
             if !file_contents.is_empty() {
                 for char in file_contents.chars() {
                     match char {
-                        '(' => println!("LEFT_PAREN {char} null"),
-                        ')' => println!("RIGHT_PAREN {char} null"),
+                        '(' => println!("{} {char} null", TokenType::LeftParen),
+                        ')' => println!("{} {char} null", TokenType::RightParen),
+                        '{' => println!("{} {char} null", TokenType::LeftBrace),
+                        '}' => println!("{} {char} null", TokenType::RightBrace),
+                        '*' => println!("{} {char} null", TokenType::Star),
+                        '-' => println!("{} {char} null", TokenType::Minus),
+                        '+' => println!("{} {char} null", TokenType::Plus),
+                        '.' => println!("{} {char} null", TokenType::Dot),
+                        ',' => println!("{} {char} null", TokenType::Comma),
+                        ';' => println!("{} {char} null", TokenType::Semicolon),
                         _ => {}
                     }
                 }
