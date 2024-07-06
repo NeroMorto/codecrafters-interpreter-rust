@@ -18,6 +18,8 @@ enum TokenType {
     Star,
     Equal,
     EqualEqual,
+    Bang,
+    BangEqual
 }
 
 impl Display for TokenType {
@@ -35,6 +37,8 @@ impl Display for TokenType {
             TokenType::Star => write!(f, "STAR"),
             TokenType::Equal => write!(f, "EQUAL"),
             TokenType::EqualEqual => write!(f, "EQUAL_EQUAL"),
+            TokenType::Bang => write!(f, "BANG"),
+            TokenType::BangEqual => write!(f, "BANG_EQUAL"),
         }
 
     }
@@ -52,13 +56,27 @@ fn match_token(char: &char, chars: &mut Chars, line_number: &usize,  is_error: &
         '.' => println!("{} {char} null", TokenType::Dot),
         ',' => println!("{} {char} null", TokenType::Comma),
         ';' => println!("{} {char} null", TokenType::Semicolon),
+        '!' => {
+            if let Some(next_char) = chars.next() {
+                match next_char {
+                    '=' => println!("{} {char}{next_char} null", TokenType::BangEqual),
+                    _ => {
+                        println!("{} {char} null", TokenType::Bang);
+                        match_token(&next_char, chars, line_number, is_error);
+                    }
+                }
+            }else {
+                println!("{} {char} null", TokenType::Bang);
+            }
+        }
         '=' => {
             if let Some(next_char) = chars.next() {
-                if next_char == '=' {
-                    println!("{} {char}{char} null", TokenType::EqualEqual)
-                } else {
-                    println!("{} {char} null", TokenType::Equal);
-                    match_token(&next_char, chars, line_number, is_error);
+                match next_char {
+                    '=' => println!("{} {char}{next_char} null", TokenType::EqualEqual),
+                    _ => {
+                        println!("{} {char} null", TokenType::Equal);
+                        match_token(&next_char, chars, line_number, is_error);
+                    }
                 }
             }else {
                 println!("{} {char} null", TokenType::Equal);
