@@ -1,7 +1,8 @@
 use std::env;
-use std::fmt::{Display, Formatter, write};
+use std::fmt::{Display, Formatter};
 use std::fs;
 use std::io::{self, Write};
+use std::process::exit;
 
 enum TokenType {
     LeftParen,
@@ -57,22 +58,33 @@ fn main() {
 
 
             if !file_contents.is_empty() {
-                for char in file_contents.chars() {
-                    match char {
-                        '(' => println!("{} {char} null", TokenType::LeftParen),
-                        ')' => println!("{} {char} null", TokenType::RightParen),
-                        '{' => println!("{} {char} null", TokenType::LeftBrace),
-                        '}' => println!("{} {char} null", TokenType::RightBrace),
-                        '*' => println!("{} {char} null", TokenType::Star),
-                        '-' => println!("{} {char} null", TokenType::Minus),
-                        '+' => println!("{} {char} null", TokenType::Plus),
-                        '.' => println!("{} {char} null", TokenType::Dot),
-                        ',' => println!("{} {char} null", TokenType::Comma),
-                        ';' => println!("{} {char} null", TokenType::Semicolon),
-                        _ => {}
+                let mut is_error = false;
+                for (line_number, line) in file_contents.lines().enumerate() {
+                    for char in line.chars() {
+                        match char {
+                            '(' => println!("{} {char} null", TokenType::LeftParen),
+                            ')' => println!("{} {char} null", TokenType::RightParen),
+                            '{' => println!("{} {char} null", TokenType::LeftBrace),
+                            '}' => println!("{} {char} null", TokenType::RightBrace),
+                            '*' => println!("{} {char} null", TokenType::Star),
+                            '-' => println!("{} {char} null", TokenType::Minus),
+                            '+' => println!("{} {char} null", TokenType::Plus),
+                            '.' => println!("{} {char} null", TokenType::Dot),
+                            ',' => println!("{} {char} null", TokenType::Comma),
+                            ';' => println!("{} {char} null", TokenType::Semicolon),
+                            _ => {
+                                if !is_error {
+                                    is_error = true
+                                }
+                                writeln!(io::stderr(), "[line {}] Error: Unexpected character: {}", line_number + 1, char).unwrap() }
+                        }
                     }
                 }
-                println!("EOF  null")
+                println!("EOF  null");
+                match is_error {
+                    true => exit(65),
+                    false => exit(0)
+                }
             } else {
                 println!("EOF  null"); // Placeholder, remove this line when implementing the scanner
             }
@@ -82,4 +94,5 @@ fn main() {
             return;
         }
     }
+
 }
