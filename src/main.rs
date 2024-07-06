@@ -29,6 +29,7 @@ enum TokenType {
     DoubleQuote,
     String,
     Number,
+    Identifier,
 }
 
 impl Display for TokenType {
@@ -56,12 +57,24 @@ impl Display for TokenType {
             TokenType::DoubleQuote => write!(f, "\""),
             TokenType::String => write!(f, "STRING"),
             TokenType::Number => write!(f, "NUMBER"),
+            TokenType::Identifier => write!(f, "IDENTIFIER"),
         }
     }
 }
 
 fn match_token(char: &char, chars: &mut Peekable<Chars>, line_number: &usize, is_error: &mut bool) -> Result<(), ()> {
     match char {
+        'a'..='z' | '_' => {
+            let mut identifier = format!("{char}");
+            while let Some(next_char) = chars.peek()  {
+                if !('a'..='z' ).contains(next_char) && !('0'..='9').contains(next_char) && '_' != *next_char {
+                    break
+                }
+                identifier.push(chars.next().unwrap());
+            }
+            println!("{} {identifier} null", TokenType::Identifier);
+            Ok(())
+        },
         '0'..='9' => {
             let mut number = "".to_string();
             let mut dot_counter: u8 = 0;
@@ -86,14 +99,26 @@ fn match_token(char: &char, chars: &mut Peekable<Chars>, line_number: &usize, is
             // }
             //
             let mut number_literal = number.clone();
-            if !number_literal.contains('.') {
-                number_literal.extend(['.','0'])
-            }
+
             if number_literal.ends_with('.') {
                 number.pop();
                 trailing_dot = true;
                 number_literal.extend(['0'])
             }
+
+            if let Some(dot_pos) = number_literal.find('.') {
+                let (int_part, frac_part) = number_literal.split_at(dot_pos + 1); // include the dot in int_part
+                let trimmed_frac = frac_part.trim_end_matches('0');
+
+                if trimmed_frac.is_empty() {
+                    number_literal = format!("{}0", int_part);
+                } else {
+                    number_literal = format!("{}{}", int_part, trimmed_frac);
+                }
+            } else {
+                number_literal = format!("{}.0", number_literal);
+            }
+
 
             println!("{} {number} {number_literal}", TokenType::Number);
 
