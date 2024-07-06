@@ -2,6 +2,7 @@ use std::env;
 use std::fmt::{Display, Formatter};
 use std::fs;
 use std::io::{self, Write};
+use std::iter::Peekable;
 use std::process::exit;
 use std::str::Chars;
 
@@ -26,7 +27,8 @@ enum TokenType {
     GreaterEqual,
     Slash,
     DoubleQuote,
-    String
+    String,
+    Number,
 }
 
 impl Display for TokenType {
@@ -53,19 +55,61 @@ impl Display for TokenType {
             TokenType::Slash => write!(f, "SLASH"),
             TokenType::DoubleQuote => write!(f, "\""),
             TokenType::String => write!(f, "STRING"),
+            TokenType::Number => write!(f, "NUMBER"),
         }
     }
 }
 
-fn match_token(char: &char, chars: &mut Chars, line_number: &usize, is_error: &mut bool) -> Result<(), ()> {
+fn match_token(char: &char, chars: &mut Peekable<Chars>, line_number: &usize, is_error: &mut bool) -> Result<(), ()> {
     match char {
+        '0'..='9' => {
+            let mut number = "".to_string();
+            let mut dot_counter: u8 = 0;
+            let mut trailing_dot = false;
+            number.push(*char);
+
+            while let Some(&next_char) = chars.peek() {
+                if !next_char.is_digit(10) && next_char != '.' || (next_char == '.' && dot_counter > 0) {
+                    break;
+                }
+                if next_char == '.' {
+                    dot_counter += 1;
+                }
+
+                number.push(chars.next().unwrap())
+            }
+
+
+            // if number.ends_with('.') {
+            //     number.pop();
+            //     trailing_dot = true
+            // }
+            //
+            let mut number_literal = number.clone();
+            if !number_literal.contains('.') {
+                number_literal.extend(['.','0'])
+            }
+            if number_literal.ends_with('.') {
+                number.pop();
+                trailing_dot = true;
+                number_literal.extend(['0'])
+            }
+
+            println!("{} {number} {number_literal}", TokenType::Number);
+
+            if trailing_dot {
+                return match_token(&'.', chars, line_number, is_error)
+            }
+
+            Ok(())
+        }
         '"' => {
             let mut literal = "".to_string();
             let mut is_complete = false;
             while let Some(next_char) = chars.next() {
                 if next_char == '"' {
                     is_complete = true;
-                    break
+                    break;
                 }
 
                 literal.push(next_char)
@@ -77,8 +121,8 @@ fn match_token(char: &char, chars: &mut Chars, line_number: &usize, is_error: &m
                 writeln!(io::stderr(), "[line {}] Error: Unterminated string.", line_number + 1).unwrap();
             }
 
-          Ok(())
-        },
+            Ok(())
+        }
         ' ' => Ok(()),
         '\t' => Ok(()),
         '(' => {
@@ -244,7 +288,7 @@ fn main() {
             if !file_contents.is_empty() {
                 let mut is_error = false;
                 for (line_number, line) in file_contents.lines().enumerate() {
-                    let mut chars = line.chars();
+                    let mut chars = line.chars().peekable();
                     while let Some(char) = chars.next() {
                         match match_token(&char, &mut chars, &line_number, &mut is_error) {
                             Ok(_) => {}
