@@ -3,6 +3,7 @@ use std::fmt::{Display, Formatter};
 use std::fs;
 use std::io::{self, Write};
 use std::process::exit;
+use std::str::Chars;
 
 enum TokenType {
     LeftParen,
@@ -15,6 +16,8 @@ enum TokenType {
     Plus,
     Semicolon,
     Star,
+    Equal,
+    EqualEqual,
 }
 
 impl Display for TokenType {
@@ -30,11 +33,48 @@ impl Display for TokenType {
             TokenType::Plus => write!(f, "PLUS"),
             TokenType::Semicolon => write!(f, "SEMICOLON"),
             TokenType::Star => write!(f, "STAR"),
+            TokenType::Equal => write!(f, "EQUAL"),
+            TokenType::EqualEqual => write!(f, "EQUAL_EQUAL"),
         }
 
     }
 }
 
+fn match_token(char: &char, chars: &mut Chars, line_number: &usize,  is_error: &mut bool) {
+    match char {
+        '(' => println!("{} {char} null", TokenType::LeftParen),
+        ')' => println!("{} {char} null", TokenType::RightParen),
+        '{' => println!("{} {char} null", TokenType::LeftBrace),
+        '}' => println!("{} {char} null", TokenType::RightBrace),
+        '*' => println!("{} {char} null", TokenType::Star),
+        '-' => println!("{} {char} null", TokenType::Minus),
+        '+' => println!("{} {char} null", TokenType::Plus),
+        '.' => println!("{} {char} null", TokenType::Dot),
+        ',' => println!("{} {char} null", TokenType::Comma),
+        ';' => println!("{} {char} null", TokenType::Semicolon),
+        '=' => {
+            if let Some(next_char) = chars.next() {
+                if next_char == '=' {
+                    println!("{} {char}{char} null", TokenType::EqualEqual)
+                } else {
+                    println!("{} {char} null", TokenType::Equal);
+                    match_token(&next_char, chars, line_number, is_error);
+                }
+            }else {
+                println!("{} {char} null", TokenType::Equal);
+            }
+
+
+        },
+        // '=' => println!("{} {char} null", TokenType::Equal),
+        _ => {
+            if !*is_error {
+                *is_error = true
+            }
+            writeln!(io::stderr(), "[line {}] Error: Unexpected character: {}", 1, char).unwrap() }
+    }
+
+}
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -45,6 +85,7 @@ fn main() {
 
     let command = &args[1];
     let filename = &args[2];
+
 
     match command.as_str() {
         "tokenize" => {
@@ -60,24 +101,10 @@ fn main() {
             if !file_contents.is_empty() {
                 let mut is_error = false;
                 for (line_number, line) in file_contents.lines().enumerate() {
-                    for char in line.chars() {
-                        match char {
-                            '(' => println!("{} {char} null", TokenType::LeftParen),
-                            ')' => println!("{} {char} null", TokenType::RightParen),
-                            '{' => println!("{} {char} null", TokenType::LeftBrace),
-                            '}' => println!("{} {char} null", TokenType::RightBrace),
-                            '*' => println!("{} {char} null", TokenType::Star),
-                            '-' => println!("{} {char} null", TokenType::Minus),
-                            '+' => println!("{} {char} null", TokenType::Plus),
-                            '.' => println!("{} {char} null", TokenType::Dot),
-                            ',' => println!("{} {char} null", TokenType::Comma),
-                            ';' => println!("{} {char} null", TokenType::Semicolon),
-                            _ => {
-                                if !is_error {
-                                    is_error = true
-                                }
-                                writeln!(io::stderr(), "[line {}] Error: Unexpected character: {}", line_number + 1, char).unwrap() }
-                        }
+                    let mut chars = line.chars();
+                    while let Some(char) = chars.next() {
+                        match_token(&char, &mut chars, &line_number, &mut is_error);
+                        // chars.next();
                     }
                 }
                 println!("EOF  null");
