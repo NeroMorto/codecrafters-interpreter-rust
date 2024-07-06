@@ -23,7 +23,8 @@ enum TokenType {
     Less,
     LessEqual,
     Greater,
-    GreaterEqual
+    GreaterEqual,
+    Slash,
 }
 
 impl Display for TokenType {
@@ -47,87 +48,149 @@ impl Display for TokenType {
             TokenType::LessEqual => write!(f, "LESS_EQUAL"),
             TokenType::Greater => write!(f, "GREATER"),
             TokenType::GreaterEqual => write!(f, "GREATER_EQUAL"),
+            TokenType::Slash => write!(f, "SLASH")
         }
-
     }
 }
 
-fn match_token(char: &char, chars: &mut Chars, line_number: &usize,  is_error: &mut bool) {
+fn match_token(char: &char, chars: &mut Chars, line_number: &usize, is_error: &mut bool) -> Result<(), ()> {
     match char {
-        '(' => println!("{} {char} null", TokenType::LeftParen),
-        ')' => println!("{} {char} null", TokenType::RightParen),
-        '{' => println!("{} {char} null", TokenType::LeftBrace),
-        '}' => println!("{} {char} null", TokenType::RightBrace),
-        '*' => println!("{} {char} null", TokenType::Star),
-        '-' => println!("{} {char} null", TokenType::Minus),
-        '+' => println!("{} {char} null", TokenType::Plus),
-        '.' => println!("{} {char} null", TokenType::Dot),
-        ',' => println!("{} {char} null", TokenType::Comma),
-        ';' => println!("{} {char} null", TokenType::Semicolon),
+        '(' => {
+            println!("{} {char} null", TokenType::LeftParen);
+            Ok(())
+        }
+        ')' => {
+            println!("{} {char} null", TokenType::RightParen);
+            Ok(())
+        }
+        '{' => {
+            println!("{} {char} null", TokenType::LeftBrace);
+            Ok(())
+        }
+        '}' => {
+            println!("{} {char} null", TokenType::RightBrace);
+            Ok(())
+        }
+        '*' => {
+            println!("{} {char} null", TokenType::Star);
+            Ok(())
+        }
+        '-' => {
+            println!("{} {char} null", TokenType::Minus);
+            Ok(())
+        }
+        '+' => {
+            println!("{} {char} null", TokenType::Plus);
+            Ok(())
+        }
+        '.' => {
+            println!("{} {char} null", TokenType::Dot);
+            Ok(())
+        }
+        ',' => {
+            println!("{} {char} null", TokenType::Comma);
+            Ok(())
+        }
+        ';' => {
+            println!("{} {char} null", TokenType::Semicolon);
+            Ok(())
+        }
+        '/' => {
+            if let Some(next_char) = chars.next() {
+                match next_char {
+                    '/' => Err(()),
+                    _ => {
+                        println!("{} {char} null", TokenType::Less);
+                        match_token(&next_char, chars, line_number, is_error)
+                    }
+                }
+            } else {
+                println!("{} {char} null", TokenType::Slash);
+                Ok(())
+            }
+        }
         '<' => {
             if let Some(next_char) = chars.next() {
                 match next_char {
-                    '=' => println!("{} {char}{next_char} null", TokenType::LessEqual),
+                    '=' => {
+                        println!("{} {char}{next_char} null", TokenType::LessEqual);
+                        Ok(())
+                    }
                     _ => {
                         println!("{} {char} null", TokenType::Less);
-                        match_token(&next_char, chars, line_number, is_error);
+                        let _ = match_token(&next_char, chars, line_number, is_error);
+                        Ok(())
                     }
                 }
-            }else {
-                println!("{} {char} null", TokenType::Less)
+            } else {
+                println!("{} {char} null", TokenType::Less);
+                Ok(())
             }
-        },
+        }
         '>' => {
             if let Some(next_char) = chars.next() {
                 match next_char {
-                    '=' => println!("{} {char}{next_char} null", TokenType::GreaterEqual),
+                    '=' => {
+                        println!("{} {char}{next_char} null", TokenType::GreaterEqual);
+                        Ok(())
+                    }
                     _ => {
                         println!("{} {char} null", TokenType::Greater);
                         match_token(&next_char, chars, line_number, is_error);
+                        Ok(())
                     }
                 }
-            }else {
-                println!("{} {char} null", TokenType::Greater)
+            } else {
+                println!("{} {char} null", TokenType::Greater);
+                Ok(())
             }
-
-        },
+        }
 
         '!' => {
             if let Some(next_char) = chars.next() {
                 match next_char {
-                    '=' => println!("{} {char}{next_char} null", TokenType::BangEqual),
+                    '=' => {
+                        println!("{} {char}{next_char} null", TokenType::BangEqual);
+                        Ok(())
+                    }
                     _ => {
                         println!("{} {char} null", TokenType::Bang);
-                        match_token(&next_char, chars, line_number, is_error);
+                        let _ = match_token(&next_char, chars, line_number, is_error);
+                        Ok(())
                     }
                 }
-            }else {
+            } else {
                 println!("{} {char} null", TokenType::Bang);
+                Ok(())
             }
         }
         '=' => {
             if let Some(next_char) = chars.next() {
                 match next_char {
-                    '=' => println!("{} {char}{next_char} null", TokenType::EqualEqual),
+                    '=' => {
+                        println!("{} {char}{next_char} null", TokenType::EqualEqual);
+                        Ok(())
+                    }
                     _ => {
                         println!("{} {char} null", TokenType::Equal);
                         match_token(&next_char, chars, line_number, is_error);
+                        Ok(())
                     }
                 }
-            }else {
+            } else {
                 println!("{} {char} null", TokenType::Equal);
+                Ok(())
             }
-
-
-        },
+        }
         // '=' => println!("{} {char} null", TokenType::Equal),
         _ => {
             if !*is_error {
                 *is_error = true
             }
-            writeln!(io::stderr(), "[line {}] Error: Unexpected character: {}", 1, char).unwrap() }
+            writeln!(io::stderr(), "[line {}] Error: Unexpected character: {}", 1, char).unwrap();
+            Ok(())
+        }
     }
-
 }
 
 fn main() {
@@ -157,7 +220,10 @@ fn main() {
                 for (line_number, line) in file_contents.lines().enumerate() {
                     let mut chars = line.chars();
                     while let Some(char) = chars.next() {
-                        match_token(&char, &mut chars, &line_number, &mut is_error);
+                        match match_token(&char, &mut chars, &line_number, &mut is_error) {
+                            Ok(_) => {}
+                            Err(_) => break
+                        }
                         // chars.next();
                     }
                 }
@@ -175,5 +241,4 @@ fn main() {
             return;
         }
     }
-
 }
