@@ -4,9 +4,11 @@ use std::io;
 use std::process::exit;
 
 use scanner::Scanner;
+use crate::parser::Parser;
 
 mod scanner;
 mod token;
+mod parser;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -43,16 +45,13 @@ fn main() {
                 eprintln!("Failed to read file {}", filename);
                 String::new()
             });
-            for line in file_contents.lines() {
-                let mut chars = line.chars();
-                let mut literal = "".to_string();
-                for char in chars {
-                    if char.is_ascii_alphabetic() {
-                        literal.push(char);
-                    }
-                }
-                println!("{literal}")
-            }
+            let mut scanner = Scanner::new(&file_contents);
+            let mut parser = Parser::new();
+            scanner.scan();
+
+            parser.parse(&scanner.tokens);
+            parser.print_expressions(io::stdout()).unwrap()
+
 
         }
         _ => {

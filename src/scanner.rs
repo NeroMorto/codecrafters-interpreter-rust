@@ -6,7 +6,7 @@ use crate::token::{Token, TokenType};
 pub struct Scanner<'a> {
     content: &'a String,
     current_line_number: usize,
-    tokens: Vec<Token>,
+    pub tokens: Vec<Token>,
     errors: Vec<String>,
 }
 
