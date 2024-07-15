@@ -38,6 +38,23 @@ fn main() {
                 true => exit(65),
             }
         }
+        "parse" => {
+            let file_contents = fs::read_to_string(filename).unwrap_or_else(|_| {
+                eprintln!("Failed to read file {}", filename);
+                String::new()
+            });
+            for line in file_contents.lines() {
+                let mut chars = line.chars();
+                let mut literal = "".to_string();
+                for char in chars {
+                    if char.is_ascii_alphabetic() {
+                        literal.push(char);
+                    }
+                }
+                println!("{literal}")
+            }
+
+        }
         _ => {
             eprintln!("Unknown command: {}", command);
         }
