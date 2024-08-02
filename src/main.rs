@@ -1,9 +1,11 @@
 use std::env;
 use std::fs;
 use std::io;
+use std::io::Write;
 use std::process::exit;
 
 use scanner::Scanner;
+
 use crate::parser::Parser;
 
 mod scanner;
@@ -46,11 +48,25 @@ fn main() {
                 String::new()
             });
             let mut scanner = Scanner::new(&file_contents);
-            let mut parser = Parser::new();
             scanner.scan();
 
-            parser.parse(&scanner.tokens);
-            parser.print_expressions(io::stdout()).unwrap()
+            let mut parser = Parser::new();
+
+
+            parser.parse_peekable(&scanner.tokens);
+            match parser.errors.len() {
+                0 => {
+                    parser.print_expressions(io::stdout()).unwrap();
+                    exit(0)
+                }
+                _ => {
+                    for error in &parser.errors {
+                        writeln!(io::stderr(), "{error}").unwrap()
+                    }
+                    exit(65)
+                }
+            }
+
 
 
         }
